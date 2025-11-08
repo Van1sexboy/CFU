@@ -32,7 +32,7 @@ Complex div(Complex first, Complex second) {
 }
 
 void print(Complex c) {
-    if (c.im >= 0) std::cout << c.re << '+' << c.im << 'j' << std::endl;
+    if (c.im >= 0) std::cout << c.re << '+' << fabs(c.im) << 'j' << std::endl;
     else std::cout << c.re << c.im << 'j' << std::endl;
 }
 
