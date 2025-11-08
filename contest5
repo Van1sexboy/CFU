@@ -123,33 +123,29 @@ void print(std::vector<Student> &expulsion_candidates){
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   package main
-
 import (
 	"encoding/json"
 	"fmt"
 	"os"
 )
 
-type Task struct{
-	UserID int `json:"userId"`
-	ID int `json:"id"`
-	Title string `json:"title"`
-	Completed bool `json:"completed"`
+type Task struct {
+	UserID    int    `json:"user_id"`
+	Completed bool   `json:"completed"`
 }
 
-type Project struct{
-	ProjectID int `json:"projectId"`
-	Tasks []Task `json:"tasks"`
+type Project struct {
+	ProjectID int    `json:"project_id"`
+	Tasks     []Task `json:"tasks"`
 }
 
 func main(){
 	file, _ := os.Open("data.json")
-	defer file.Close()
 	var projects []Project
 	json.NewDecoder(file).Decode(&projects)
 	var userID int
 	fmt.Scan(&userID)
-	
+	count := 0 	
 	for _, project := range projects {
 	    for _, task := range project.Tasks {
 	        if task.UserID == userID && task.Completed {
@@ -158,6 +154,128 @@ func main(){
 	    }
 	}
 	fmt.Print(count)
-
 }
 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#include "iostream"
+#include "fstream"
+#include "json.hpp"
+using json = nlohmann::json;
+using namespace std;
+
+int main() {
+	ifstream file("data.json");
+	json data = json::parse(file);
+	int user_id, count = 0;
+	cin >> user_id;
+    for (auto& project : data) {
+        for (auto& task : project["tasks"]) {
+            if (task["user_id"] == user_id && task["completed"]) {
+                count++;
+            }
+        }
+    }
+    cout << count;
+}
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <sstream>
+#include <map>
+#include <algorithm>
+
+struct Passenger {
+    int pclass;
+    std::string name;
+    std::string sex;
+    int age;
+};
+
+std::string readcsv(std::stringstream &ss) {
+    std::string field;
+    if (ss.peek() == '"') {
+        ss.get();
+        char c;
+        while (ss.get(c)) {
+            if (c == '"') {
+                if (ss.peek() == '"') {
+                    field += '"';
+                    ss.get();
+                } else {
+                    break;
+                }
+            } else {
+                field += c;
+            }
+        }
+        if (ss.peek() == ',') ss.get();
+    } else {
+        std::getline(ss, field, ',');
+    }
+    return field;
+}
+
+int main() {
+
+    int userPclass;
+    int userAge;
+    std::cin >> userPclass >> userAge;
+
+    std::vector<Passenger> passengers_vector;
+
+    std::ifstream file("train.csv");
+    if (!file.is_open()) return 1;
+    std::string line;
+    std::getline(file, line, '\r');
+
+    auto trim = [](std::string &s){
+        s.erase(0, s.find_first_not_of(" \t\n\r"));
+        s.erase(s.find_last_not_of(" \t\n\r") + 1);
+    };
+
+    std::map<std::string, double> sorted_passengers;
+
+    while (std::getline(file, line, '\r')) {
+        if (!line.empty()) {
+            if (!line.empty() && line.back() == '\n') line.pop_back();
+
+            std::stringstream ss(line);
+            Passenger p;
+            std::string tmp;
+
+            readcsv(ss); // скип айди
+            readcsv(ss); // скип выжил/нет
+
+            tmp = readcsv(ss); trim(tmp);
+            try { p.pclass = tmp.empty() ? 0 : std::stoi(tmp); } 
+            catch (const std::invalid_argument&) { p.pclass = 0; }
+
+            p.name = readcsv(ss); trim(p.name);
+            p.sex = readcsv(ss); trim(p.sex);
+
+            tmp = readcsv(ss); trim(tmp);
+            try { p.age = tmp.empty() ? 0.0 : std::stoi(tmp); } 
+            catch (const std::invalid_argument&) { p.age = 0; }
+
+            if ((p.age > userAge) && (p.pclass == userPclass) && (p.sex == "female")) {
+               sorted_passengers[p.name] = p.age;
+            }
+        }
+    }
+    std::vector<std::pair<std::string, double>> vec(sorted_passengers.begin(), sorted_passengers.end());
+    std::sort(vec.begin(), vec.end(), [](auto &a, auto &b) {
+        if (a.second != b.second) 
+            return a.second < b.second;
+        return a.first < b.first; 
+    });
+    
+    for (auto v : vec) {
+        std::cout << v.first << std::endl;
+    }
+    file.close();
+}
