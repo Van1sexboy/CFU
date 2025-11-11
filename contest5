@@ -193,7 +193,7 @@ struct Passenger {
     int pclass;
     std::string name;
     std::string sex;
-    int age;
+    double age;
 };
 
 std::string readcsv(std::stringstream &ss) {
@@ -223,7 +223,7 @@ std::string readcsv(std::stringstream &ss) {
 int main() {
 
     int userPclass;
-    int userAge;
+    double userAge;
     std::cin >> userPclass >> userAge;
 
     std::vector<Passenger> passengers_vector;
