@@ -1,0 +1,137 @@
+-------------------------------------------------------------------------------------------------------------------
+
+#include <cstdlib>
+
+class Cat {
+    bool alive;
+public:
+    Cat(bool a) : alive(a) {}
+
+    bool is_alive() {
+        return alive;
+    }
+};
+
+class Box {
+public:
+    Cat open() {
+        bool state = rand() % 2;
+        return Cat(state);
+    }
+};
+-------------------------------------------------------------------------------------------------------------------
+
+type Cat struct {
+    alive bool
+}
+
+func (c Cat) is_alive() bool {
+    return c.alive
+}
+
+type Box struct{}
+
+func (b Box) open() Cat {
+    rand.Seed(time.Now().UnixNano())
+    return Cat{rand.Intn(2) == 1}
+}
+-------------------------------------------------------------------------------------------------------------------
+
+class Water {
+public:
+    int temperature;
+    Water(int temp) : temperature(temp) {}
+};
+class Teapot {
+    Water& water;
+public:
+    Teapot(Water& w) : water(w) {}
+
+    bool is_boiling() {
+        return water.temperature >= 100;
+    }
+    void heat_up(int d) {
+        water.temperature += d;
+    }
+};
+-------------------------------------------------------------------------------------------------------------------
+
+type Water struct {
+    temperature int
+}
+
+func NewWater(temp int) Water {
+    return &Water{temperature: temp}
+}
+
+type Teapot struct {
+    waterWater
+}
+
+func NewTeapot(w Water)Teapot {
+    return &Teapot{water: w}
+}
+
+func (t Teapot) is_boiling() bool {
+    return t.water.temperature >= 100
+}
+
+func (tTeapot) heat_up(delta int) {
+    t.water.temperature += delta
+}
+-------------------------------------------------------------------------------------------------------------------
+
+#include <cmath>
+
+class Point {
+private:
+    double cartX, cartY;   // декартовы координаты (x, y)
+    double polarR, polarA; // полярные координаты (r, a)
+
+    void updatePolar() {
+        polarR = std::sqrt(cartX * cartX + cartY * cartY); // r = sqrt(x² + y²)
+        polarA = std::atan2(cartY, cartX); // поиск угла через арктангенс
+    }
+
+    void updateCartesian() {
+        // перевод координат 
+        cartX = polarR * std::cos(polarA); 
+        cartY = polarR * std::sin(polarA);
+    }
+
+public:
+    // Конструктор
+    Point(double x0, double y0) : cartX(x0), cartY(y0) {
+        updatePolar();
+    }
+
+    // get
+
+    double get_x() const { return cartX; }
+    double get_y() const { return cartY; }
+    double get_r() const { return polarR; }
+    double get_a() const { return polarA; }
+
+    // set
+
+    void set_x(double newX) {
+        cartX = newX;
+        updatePolar();
+    }
+
+    void set_y(double newY) {
+        cartY = newY;
+        updatePolar();
+    }
+
+    void set_r(double newR) {
+        polarR = newR;
+        updateCartesian();
+    }
+
+    void set_a(double newA) {
+        polarA = newA;
+        updateCartesian();
+    }
+};
+-------------------------------------------------------------------------------------------------------------------
