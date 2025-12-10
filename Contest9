@@ -1,0 +1,234 @@
+=================================================1====================================================================================
+
+func printTypes(data []interface{}) {
+    for i, v := range data {
+        switch v.(type) {
+        case int:
+            fmt.Print("int")
+        case string:
+            fmt.Print("string")
+        case Human:
+            fmt.Print("Human")
+        case *Human:
+            fmt.Print("*Human")
+        default:
+            fmt.Print("interface")
+        }
+
+        if i < len(data)-1 {
+            fmt.Print(" ")
+        }
+    }
+}
+
+=================================================3====================================================================================
+
+type SimpleStack struct {
+    data []rune
+}
+
+func NewSimpleStack() *SimpleStack {
+    return &SimpleStack{
+        data: []rune{},
+    }
+}
+
+func (s *SimpleStack) empty() bool {
+    return len(s.data) == 0
+}
+
+func (s *SimpleStack) push(r rune) {
+    s.data = append(s.data, r)
+}
+
+func (s *SimpleStack) top() rune {
+    return s.data[len(s.data)-1]
+}
+
+func (s *SimpleStack) pop() rune {
+    r := s.data[len(s.data)-1]
+    s.data = s.data[:len(s.data)-1]
+    return r
+}
+
+=================================================5====================================================================================
+
+type UserBot struct {
+    marker     string
+    enemy      string
+}
+
+// создать нового бота
+func NewUserBot() *UserBot {
+    return &UserBot{}
+}
+
+func (b *UserBot) startGame(marker string) {
+    b.marker = marker
+    if marker == "X" {
+        b.enemy = "O"
+    } else {
+        b.enemy = "X"
+    }
+}
+
+func (b *UserBot) getMarker() string {
+    return b.marker
+}
+
+func (b *UserBot) endGame(winner string) {}
+
+// проверяет выиграет ли marker, если поставить в (r,c)
+func wouldWin(board Board, r, c int, marker string) bool {
+    tmp := board
+    tmp[r][c] = marker
+    ok, win := tmp.isGameOver()
+    return ok && win == marker
+}
+
+func (b *UserBot) step(board Board) (row, col int, marker string) {
+
+    // 1) Если есть выигрышный ход => ставим туда
+    for r := 0; r < 3; r++ {
+        for c := 0; c < 3; c++ {
+            if board[r][c] == " " && wouldWin(board, r, c, b.marker) {
+                return r, c, b.marker
+            }
+        }
+    }
+
+    // 2) Если противник может выиграть следующим ходом => блокируем
+    for r := 0; r < 3; r++ {
+        for c := 0; c < 3; c++ {
+            if board[r][c] == " " && wouldWin(board, r, c, b.enemy) {
+                return r, c, b.marker
+            }
+        }
+    }
+
+    // 3) Центр
+    if board[1][1] == " " {
+        return 1, 1, b.marker
+    }
+
+    // 4) Углы
+    corners := [4][2]int{{0,0},{0,2},{2,0},{2,2}}
+    for _, p := range corners {
+        r, c := p[0], p[1]
+        if board[r][c] == " " {
+            return r, c, b.marker
+        }
+    }
+
+    // 5) Стороны
+    sides := [4][2]int{{0,1},{1,0},{1,2},{2,1}}
+    for _, p := range sides {
+        r, c := p[0], p[1]
+        if board[r][c] == " " {
+            return r, c, b.marker
+        }
+    }
+
+    // fallback
+    return 0, 0, b.marker
+}
+
+=================================================6====================================================================================
+
+import "strings"
+
+type BinaryTreeNode struct {
+	value int
+	left  *BinaryTreeNode
+	right *BinaryTreeNode
+}
+
+func NewBinaryTreeNode(value int) *BinaryTreeNode {
+	return &BinaryTreeNode{value: value}
+}
+
+func (t *BinaryTreeNode) insertNode(value int) {
+	if value < t.value {
+		if t.left == nil {
+			t.left = NewBinaryTreeNode(value)
+		} else {
+			t.left.insertNode(value)
+		}
+	} else if value > t.value {
+		if t.right == nil {
+			t.right = NewBinaryTreeNode(value)
+		} else {
+			t.right.insertNode(value)
+		}
+	}
+}
+
+func (t *BinaryTreeNode) findNode(value int) *BinaryTreeNode {
+	if t == nil {
+		return nil
+	}
+	if value == t.value {
+		return t
+	}
+	if value < t.value {
+		return t.left.findNode(value)
+	}
+	return t.right.findNode(value)
+}
+
+func (t *BinaryTreeNode) findMax() *BinaryTreeNode {
+	curr := t
+	for curr.right != nil {
+		curr = curr.right
+	}
+	return curr
+}
+
+func (t *BinaryTreeNode) removeNode(value int) *BinaryTreeNode {
+	if t == nil {
+		return nil
+	}
+	if value < t.value {
+		t.left = t.left.removeNode(value)
+		return t
+	}
+	if value > t.value {
+		t.right = t.right.removeNode(value)
+		return t
+	}
+
+	if t.left == nil {
+		return t.right
+	}
+	if t.right == nil {
+		return t.left
+	}
+
+	maxNode := t.left.findMax()
+	t.value = maxNode.value
+
+	t.left = t.left.removeNode(maxNode.value)
+	return t
+}
+
+func (t *BinaryTreeNode) String() string {
+	if t == nil {
+		return ""
+	}
+	var sb strings.Builder
+	queue := []*BinaryTreeNode{t}
+
+	for len(queue) > 0 {
+		node := queue[0]
+        queue = queue[1:]
+		sb.WriteString(fmt.Sprintf("%d ", node.value))
+
+		if node.left != nil {
+			queue = append(queue, node.left)
+		}
+		if node.right != nil {
+			queue = append(queue, node.right)
+		}
+	}
+	return sb.String()
+}
