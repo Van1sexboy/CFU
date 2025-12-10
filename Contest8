@@ -1,0 +1,371 @@
+=================================================1====================================================================================
+
+int* new_array(int len, int value) {
+    int* array = new int[len];
+    for (int i=0; i < len; i++) {
+        array[i] = value;
+    }
+    return array;
+}
+
+int set_new_length(int** array, int old_len, int new_len) {
+    if (new_len == old_len) return new_len;
+    int* new_arr = new int[new_len];
+    if (new_len > old_len) {
+        for (int i=0; i < old_len; i++) {
+            new_arr[i] = (*array)[i];
+        }
+        for (int i=old_len; i < new_len; i++) {
+            new_arr[i] = 0;
+        }
+    } 
+    else {
+        for (int i = 0; i < new_len; i++) {
+            new_arr[i] = (*array)[i];
+        }
+    }
+    delete[] *array;
+    *array = new_arr;
+    return new_len;
+}
+
+int merge(int** dest_array, int len_dest_array, const int* src_array, int len_src_array) {
+    int* new_arr = new int[len_dest_array+len_src_array];
+    for (int i=0; i < len_dest_array; i++) {
+        new_arr[i] = (*dest_array)[i];
+    }
+    for (int i=len_dest_array; i < (len_dest_array+len_src_array); i++) {
+        new_arr[i] = src_array[i-len_dest_array];
+    } 
+    delete[] *dest_array;
+    *dest_array = new_arr;
+    return len_dest_array+len_src_array;
+}
+
+int dot(const int* a, const int* b, int len) {
+    if (len == 0) return 0;
+    int sc = 0;
+    for (int i = 0; i < len; i++) {
+        sc += a[i] * b[i];
+    }
+    return sc;
+}
+
+int* find(int* array, int len, int value) {
+    for (int i = 0; i < len; i++) {
+        if (array[i] == value) {
+            return &array[i];
+        }
+    }
+    return nullptr;
+}
+
+void delete_array(int** array) {
+    if (array == nullptr || *array == nullptr) {
+        return;
+    }
+    delete[] *array;
+    *array = nullptr;
+}
+
+=================================================2====================================================================================
+
+int** new_matrix(int rows, int cols, int value){
+    int** m = new int*[rows];
+    for(int i=0; i<rows; i++){
+        m[i] = new int[cols];
+        for(int j=0; j<cols; j++)
+            m[i][j] = value;
+    }
+    return m;
+}
+
+std::tuple<int**, int, int> convolution(int** matrix, int mrows, int mcols,
+                                       int** core, int crows, int ccols)
+{
+    int rres = mrows - crows + 1;
+    int cres = mcols - ccols + 1;
+
+    if(rres <= 0 || cres <= 0) {
+        // пустой результат
+        return { new_matrix(0,0), 0, 0 };
+    }
+
+    int** res = new_matrix(rres, cres);
+
+    for(int i=0; i<rres; i++){
+        for(int j=0; j<cres; j++){
+            long long sum = 0;
+            for(int ki=0; ki<crows; ki++)
+                for(int kj=0; kj<ccols; kj++)
+                    sum += 1LL * matrix[i+ki][j+kj] * core[ki][kj];
+
+            res[i][j] = (int)sum;
+        }
+    }
+
+    return {res, rres, cres};
+}
+
+std::tuple<int**, int, int> multiplication(int** a, int arows, int acols,
+                                          int** b, int brows, int bcols)
+{
+    // acols == brows
+    int** res = new_matrix(arows, bcols);
+
+    for(int i=0; i<arows; i++){
+        for(int j=0; j<bcols; j++){
+            long long sum = 0;
+            for(int k=0; k<acols; k++)
+                sum += 1LL * a[i][k] * b[k][j];
+            res[i][j] = (int)sum;
+        }
+    }
+
+    return {res, arows, bcols};
+}
+
+std::tuple<int,int> add_row(int*** matrix, int rows, int cols, int value){
+    int** oldmat = *matrix;
+
+    int** nm = new int*[rows + 1];
+
+    for(int i=0; i<rows; i++) nm[i] = oldmat[i];
+
+    nm[rows] = new int[cols];
+    for(int j=0; j<cols; j++) nm[rows][j] = value;
+
+    delete[] oldmat;
+
+    *matrix = nm;
+
+    return {rows + 1, cols};
+}
+
+std::tuple<int,int> add_col(int*** matrix, int rows, int cols, int value){
+    int** m = *matrix;
+
+    for(int i=0; i<rows; i++){
+        int* new_row = new int[cols + 1];
+        for(int j=0; j<cols; j++)
+            new_row[j] = m[i][j];
+
+        new_row[cols] = value;
+
+        delete[] m[i];
+        m[i] = new_row;
+    }
+
+    return {rows, cols + 1};
+}
+
+void delete_matrix(int*** matrix, int rows){
+    int** m = *matrix;
+    for(int i=0; i<rows; i++)
+        delete[] m[i];
+    delete[] m;
+    *matrix = nullptr;
+}
+
+void print(int** matrix, int rows, int cols){
+    for(int i=0; i<rows; i++){
+        for(int j=0; j<cols; j++){
+            std::cout << matrix[i][j];
+            if(j + 1 < cols) std::cout << " ";
+        }
+        std::cout << "\n";
+    }
+}
+
+=================================================3====================================================================================
+
+class IntSharedPointer {
+    int* ptr;
+    int* ref_count;
+
+public:
+    IntSharedPointer(int* p = nullptr) : ptr(p) {
+        if (p) ref_count = new int(1);
+        else   ref_count = new int(0);
+    }
+
+    IntSharedPointer(const IntSharedPointer& other)
+        : ptr(other.ptr), ref_count(other.ref_count)
+    {
+        if (ptr) (*ref_count)++;
+    }
+
+    int& operator*() const {
+        return *ptr;
+    }
+
+    void swap(IntSharedPointer& other) {
+        std::swap(ptr, other.ptr);
+        std::swap(ref_count, other.ref_count);
+    }
+
+    IntSharedPointer& operator=(IntSharedPointer other) {
+        swap(other);
+        return *this;
+    }
+
+    ~IntSharedPointer() {
+        if (ptr) {
+            (*ref_count)--;
+            if (*ref_count == 0) {
+                delete ptr;
+                delete ref_count;
+            }
+        } else {
+            delete ref_count;
+        }
+    }
+};
+
+=================================================4====================================================================================
+
+Any::Any(int* data) : data(data), type(Type::INT){}
+
+Any::Any(double* data) : data(data), type(Type::DOUBLE){}
+    
+Any::Any(std::string* data) : data(data), type(Type::STRING){}
+    
+Any::Any(std::vector<Any*>* data) : data(data), type(Type::VECTOR_ANY_PTR){}
+    
+Any::~Any(){
+    switch (type) {
+        case Type::INT:
+            delete static_cast<int*>(data);
+            break;
+        case Type::DOUBLE:
+            delete static_cast<double*>(data);
+            break;
+        case Type::STRING:
+            delete static_cast<std::string*>(data);
+            break;
+        case Type::VECTOR_ANY_PTR:{
+            std::vector<Any*>* vec = static_cast<std::vector<Any*>*>(data);
+            for (Any* elem : *vec) {
+                delete elem;
+            }
+            delete vec;
+            break;
+        }
+    }
+}
+    
+Any::operator int() {
+    if (type != Type::INT){
+        throw "";
+    }
+    return *static_cast<int*>(data);
+}
+
+Any::operator double() {
+    if (type != Type::DOUBLE){
+        throw "";
+    }
+    return *static_cast<double*>(data);
+}
+    
+Any::operator std::string(){
+    if (type != Type::STRING){
+        throw "";
+    }
+    return *static_cast<std::string*>(data);
+}
+    
+Any::operator std::vector<Any*>*(){
+    if (type != Type::VECTOR_ANY_PTR){
+        throw "";
+    }
+    return static_cast<std::vector<Any*>*>(data);
+}
+
+std::ostream& operator<<(std::ostream& out, const Any& val){
+    switch (val.type)
+    {
+    case Any::Type::INT:
+        out << *static_cast<int*>(val.data);
+        break;
+    case Any::Type::DOUBLE:
+        out << *static_cast<double*>(val.data);
+        break;
+    case Any::Type::STRING:
+        out << *static_cast<std::string*>(val.data);
+        break;
+    case Any::Type::VECTOR_ANY_PTR:
+        std::vector<Any*>* vec = static_cast<std::vector<Any*>*>(val.data);
+        for (int i = 0; i < vec->size(); i++){
+            out << *vec->at(i);
+            if (i < vec->size() - 1) out << " ";
+        }
+        break;
+    }
+    return out;
+}
+
+=================================================5====================================================================================
+
+class GreaterAdapter : public IComparator {
+    using func = void (*)(int, int, bool&);
+    func cmp;
+public:
+    GreaterAdapter(func cmp) : cmp(cmp) {}
+
+    bool compare(int a, int b) const override {
+        bool result = false;
+        cmp(a, b, result);
+        return result;
+    }
+};
+
+class KeyFuncLessAdapter : public IComparator {
+    using func = double (*)(int);
+    func key;
+
+public:
+    KeyFuncLessAdapter(func key) : key(key) {}
+
+    bool compare(int a, int b) const override {
+        return key(a) < key(b);
+    }
+};
+
+=================================================6====================================================================================
+
+class ScreenPrintStrategy : public PrintStrategy {
+public:
+    void print(const Document& document) override {
+        std::cout << document.get() << std::endl;
+    }
+};
+
+class StringPrintStrategy : public PrintStrategy {
+    std::string buffer;
+    int counter = 1;
+
+public:
+    void print(const Document& document) override {
+        buffer += std::string("--- doc ") + std::to_string(counter) + " ---\n";
+        buffer += document.get() + "\n";
+        ++counter;
+    }
+
+    std::string getPrintedDocuments() const {
+        return buffer;
+    }
+};
+
+class MockPrintStrategy : public PrintStrategy {
+    int printedCount = 0;
+
+public:
+    void print(const Document&) override {
+        ++printedCount;
+    }
+
+    int getPrintedDocumentsCount() const {
+        return printedCount;
+    }
+};
